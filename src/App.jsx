@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
+import { Menu, X, Moon, Sun } from "lucide-react";
 
 export default function App() {
   const [messages, setMessages] = useState([]);
@@ -8,12 +9,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState("dark");
   const [botTyping, setBotTyping] = useState("");
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef(null);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
+  const isDark = theme === "dark";
+
+  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -53,13 +55,21 @@ export default function App() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, botTyping]);
 
-  const isDark = theme === "dark";
-
   return (
-    <div className={`${isDark ? "bg-[#1f1f1f] text-white" : "bg-white text-black"} flex h-screen font-sans`}>
+    <div className={`h-screen ${isDark ? "bg-[#1f1f1f] text-white" : "bg-white text-black"} grid sm:grid-cols-[16rem_1fr]`}>
+      
       {/* Sidebar */}
-      <aside className={`${isDark ? "bg-[#2c2c2c] border-gray-700" : "bg-gray-100 border-gray-300"} w-64 border-r flex flex-col p-4`}>
-        <h2 className={`text-xl font-semibold mb-6 ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>ChatGPT</h2>
+      <aside
+        className={`fixed sm:static top-0 left-0 h-full w-64 z-30 transition-transform duration-300 transform ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0"
+        } ${isDark ? "bg-[#2c2c2c] border-gray-700" : "bg-gray-100 border-gray-300"} border-r flex flex-col p-4`}
+      >
+        <div className="flex justify-between items-center mb-6 sm:hidden">
+          <h2 className={`text-xl font-semibold ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>ChatGPT</h2>
+          <button onClick={toggleSidebar}>
+            <X size={24} />
+          </button>
+        </div>
         <nav className="space-y-2">
           <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-100 transition">
             Futuristic AI Chat UI
@@ -77,21 +87,27 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main Chat */}
-      <div className="flex flex-col flex-1">
+      {/* Main Chat Area */}
+      <div className="flex flex-col">
         {/* Header */}
-        <header className={`${isDark ? "bg-[#2a2a2a] border-gray-700" : "bg-gray-200 border-gray-300"} h-16 border-b flex items-center px-6 justify-between`}>
-          <div className="text-lg font-medium">🤖 SmartChatTLDR AI</div>
-          <button
-            onClick={toggleTheme}
-            className="text-sm px-3 py-1 rounded-md bg-cyan-500 text-white hover:bg-cyan-600"
-          >
-            Toggle {theme === "dark" ? "Light" : "Dark"} Mode
+        <header
+          className={`flex justify-between items-center h-16 px-4 sm:px-6 border-b ${
+            isDark ? "bg-[#2a2a2a] border-gray-700" : "bg-gray-200 border-gray-300"
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <button className="sm:hidden" onClick={toggleSidebar}>
+              <Menu size={24} />
+            </button>
+            <span className="text-lg font-medium">🤖 SmartChatTLDR AI</span>
+          </div>
+          <button onClick={toggleTheme} className="text-cyan-500 hover:text-cyan-600">
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </header>
 
-        {/* Chat Messages */}
-        <main className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {/* Chat messages */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
               <div
@@ -108,7 +124,7 @@ export default function App() {
             </div>
           ))}
 
-          {/* Typing animation */}
+          {/* Bot typing animation */}
           {botTyping && (
             <div className="flex justify-start">
               <div
@@ -121,16 +137,14 @@ export default function App() {
             </div>
           )}
 
-          {/* Typing status */}
           {loading && !botTyping && (
             <div className="text-sm text-gray-400 px-2 animate-pulse">🤖 Typing...</div>
           )}
-
           <div ref={bottomRef}></div>
         </main>
 
         {/* Input Area */}
-        <div className={`${isDark ? "bg-[#2a2a2a] border-gray-700" : "bg-gray-200 border-gray-300"} p-4 border-t flex gap-3`}>
+        <div className={`p-4 border-t flex gap-3 ${isDark ? "bg-[#2a2a2a] border-gray-700" : "bg-gray-200 border-gray-300"}`}>
           <input
             className={`flex-grow p-3 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
               isDark ? "bg-[#3a3a3a] text-white" : "bg-white text-black"
@@ -146,6 +160,11 @@ export default function App() {
           >
             Send
           </button>
+        </div>
+
+        {/* Footer */}
+        <div className={`text-center py-2 text-sm ${isDark ? "bg-[#2a2a2a]" : "bg-gray-100"}`}>
+          Developed with ❤️ by Ranjan Kumar Prajapati
         </div>
       </div>
     </div>
